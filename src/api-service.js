@@ -5,21 +5,22 @@ const API_KEY = '24859248-4166dc933cd9269e5d8314464';
 const imageType = 'photo';
 const orientation = 'horizontal';
 const safeSearch = true;
-const perPage = 40;
+// const perPage = 40;
 
 export default class ApiService {
   constructor() {
     this.searchQuery = '';
     this.page = 1;
+    this.perPage = 40;
   }
 
   async getData() {
     return await axios
       .get(
-        `${BASE_URL}/?key=${API_KEY}&q=${this.searchQuery}&per_page=${perPage}&page=${this.page}&image_type=${imageType}&orientation=${orientation}&safesearch=${safeSearch}`,
+        `${BASE_URL}/?key=${API_KEY}&q=${this.searchQuery}&per_page=${this.perPage}&page=${this.page}&image_type=${imageType}&orientation=${orientation}&safesearch=${safeSearch}`,
       )
       .then(response => {
-        console.log('api', response.data);
+        // console.log('api', response.data);
         this.incrementPage();
 
         return response.data;

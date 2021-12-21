@@ -14,25 +14,42 @@ const loadMoreBtn = document.querySelector('.load-more');
 searchForm.addEventListener('submit', searchContent);
 loadMoreBtn.addEventListener('click', loadMore);
 
-function renderData(collection) {
-  const totalHits = collection.totalHits;
+function hideBtnMore(data) {
+  const totalHits = data.totalHits;
+  const totalPages = Math.ceil(totalHits / apiService.perPage);
 
+  if (apiService.page > totalPages) {
+    loadMoreBtn.classList.remove('show');
+
+    window.onscroll = () => {
+      if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+        Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+      }
+    };
+  }
+}
+
+function showMessage(data) {
+  const totalHits = data.totalHits;
+
+  console.log(totalHits);
   if (totalHits > 40) {
     loadMoreBtn.classList.add('show');
   }
 
   if (totalHits > 0) {
-    Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
   } else {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.',
     );
     loadMoreBtn.classList.remove('show');
   }
+}
 
+function renderData(collection) {
   const hits = collection.hits;
 
-  let cards = hits
+  const cards = hits
     .map(value => {
       return `<div class="photo-card">
               <a href="${value.largeImageURL}">
@@ -59,13 +76,7 @@ function renderData(collection) {
               </div>`;
     })
     .join('');
-
-  const cardArray = [];
-  cardArray.push(cards);
-
-  cardArray.forEach(el => {
-    gallery.insertAdjacentHTML('beforeEnd', el);
-  });
+  gallery.insertAdjacentHTML('beforeEnd', cards);
 
   lightbox.refresh();
 }
@@ -78,21 +89,33 @@ function searchContent(e) {
   e.preventDefault();
 
   loadMoreBtn.classList.remove('show');
+  apiService.resetPage();
 
   apiService.searchQuery = e.target.elements.searchQuery.value;
 
-  if (apiService.searchQuery === '') {
-    Notiflix.Notify.info('Please enter your query');
+  if (apiService.searchQuery.length === 0 || apiService.searchQuery.includes(' ')) {
+    Notiflix.Notify.failure('Please enter your query');
   } else {
-    apiService.getData().then(renderData);
+    apiService
+      .getData()
+      .then(collection => {
+        showMessage(collection);
+        return collection;
+      })
+      .then(renderData);
   }
 
-  apiService.resetPage();
   cleanGallery();
 }
 
 function loadMore() {
-  apiService.getData().then(renderData);
+  apiService
+    .getData()
+    .then(collection => {
+      hideBtnMore(collection);
+      return collection;
+    })
+    .then(renderData);
 
   smoothScroll();
 }
