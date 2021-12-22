@@ -32,12 +32,12 @@ function hideBtnMore(data) {
 function showMessage(data) {
   const totalHits = data.totalHits;
 
-  console.log(totalHits);
   if (totalHits > 40) {
     loadMoreBtn.classList.add('show');
   }
 
   if (totalHits > 0) {
+    Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
   } else {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.',
@@ -92,8 +92,9 @@ function searchContent(e) {
   apiService.resetPage();
 
   apiService.searchQuery = e.target.elements.searchQuery.value;
+  const query = apiService.searchQuery.trim();
 
-  if (apiService.searchQuery.length === 0 || apiService.searchQuery.includes(' ')) {
+  if (query.length === 0) {
     Notiflix.Notify.failure('Please enter your query');
   } else {
     apiService
